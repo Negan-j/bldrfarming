@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Negan's Farming Journal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main id="app" class="shell hidden" style="display: none;">
+        <section class="panel">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Negan's Farming</p>
+                    <h1>Recipe Journal</h1>
+                </div>
+                <button id="close" class="icon-button" type="button" aria-label="Close">x</button>
+            </header>
+
+            <section class="summary-grid">
+                <article class="summary">
+                    <span class="label">Farming Level</span>
+                    <strong id="level">1</strong>
+                    <div class="bar"><span id="xpBar"></span></div>
+                    <small id="xpText">0 XP</small>
+                </article>
+                <article class="summary">
+                    <span class="label">Reputation</span>
+                    <strong id="tier">Roadside Seller</strong>
+                    <div class="bar reputation"><span id="repBar"></span></div>
+                    <small id="repText">0 reputation</small>
+                </article>
+            </section>
+
+            <nav class="tabs" aria-label="Journal sections">
+                <button class="tab active" data-tab="orders" type="button">Orders</button>
+                <button class="tab" data-tab="recipes" type="button">Recipes</button>
+                <button class="tab" data-tab="fruit" type="button">Fruit</button>
+                <button class="tab" data-tab="tools" type="button">Tools</button>
+            </nav>
+
+            <section id="orders" class="tab-page active">
+                <div class="section-title">
+                    <h2>Daily Buyer Orders</h2>
+                    <span id="orderReset"></span>
+                </div>
+                <div id="ordersList" class="card-grid"></div>
+            </section>
+
+            <section id="recipes" class="tab-page">
+                <div class="section-title">
+                    <h2>Known Recipes</h2>
+                    <span id="recipeCount"></span>
+                </div>
+                <div id="recipesList" class="card-grid"></div>
+            </section>
+
+            <section id="fruit" class="tab-page">
+                <div class="section-title">
+                    <h2>Fruit Unlocks</h2>
+                    <span>Level-gated harvest list</span>
+                </div>
+                <div id="fruitList" class="fruit-grid"></div>
+            </section>
+
+            <section id="tools" class="tab-page">
+                <div class="section-title">
+                    <h2>Farm Tools</h2>
+                    <span>Passive bonuses</span>
+                </div>
+                <div id="toolsList" class="card-grid"></div>
+            </section>
+        </section>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
