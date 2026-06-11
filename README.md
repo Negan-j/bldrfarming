@@ -1,159 +1,143 @@
+# negans_farming
 
-# Farming Job Resource
+Comprehensive QBCore fruit farming resource with:
 
-A FiveM farming job resource for QBCore framework with ox_inventory, ox_lib, and React NUI support.
-## Features
+- XP based fruit unlocks. Locked fruit targets and blips are not created until the player reaches the required level.
+- 3rd eye picking through `ox_target`, with `qb-target` fallback.
+- Real tree harvest spots. Existing map tree models can be searched directly, prop spawning is disabled by default, and admins can save extra harvest spots in game.
+- `ox_lib` skill checks, input dialogs, context menus, notifications, and progress circles.
+- Harvest, press, drink, and sell animations with props.
+- Hidden juice mixtures. Players experiment with fruit, sugar, and ice; successful recipes are saved to their known recipe book.
+- NUI farming journal with XP progress, reputation, buyer orders, tool status, locked fruit silhouettes, and discovered recipes.
+- In-game tutorial with step-by-step guide, GPS waypoints, and `/farmingtutorial`.
+- Daily buyer orders with capped per-player bonus payouts for selected juices.
+- Farm tools that improve picking yield, skill checks, cooldowns, or animation time when carried.
+- Reputation tiers that increase sale prices and unlock rare recipes.
+- Admin commands for XP, reputation, recipe resets, and sickness testing.
+- Drinkable juices. Drinking too many within the configured window makes the player sick.
+- Selling buyer with a custom `ox_lib` UI instead of an inventory shop.
+- Configured for `ox_inventory`.
 
-- Pick crops at farm zones (wheat, corn, tomato)
-- Process raw crops into sellable products
-- Sell processed goods at the market
-- Progress bar animations with ox_lib
-- Beautiful React NUI menu
-- Support for qb-target and ox_target
-- Secure server-side validation with anti-exploit measures
+## Dependencies
 
-## Requirements
+Required:
 
-- [qb-core](https://github.com/qbcore-framework/qb-core)
-- [ox_lib](https://github.com/overextended/ox_lib)
-- [ox_inventory](https://github.com/overextended/ox_inventory)
-- [oxmysql](https://github.com/overextended/oxmysql)
-- [qb-target](https://github.com/qbcore-framework/qb-target) OR [ox_target](https://github.com/overextended/ox_target)
-
-## Installation
-
-### 1. Add Items to ox_inventory
-
-Copy the contents of `shared/items.lua` into your ox_inventory items file (usually `ox_inventory/data/items.lua`).
-
-### 2. Ensure Proper Load Order
-
-Add to your server.cfg ensuring dependencies load first:
-
-```
+```cfg
 ensure qb-core
-ensure ox_lib
 ensure oxmysql
+ensure ox_lib
 ensure ox_inventory
-ensure qb-target  # or ox_target
-ensure farmingjob
+ensure ox_target
+ensure negans_farming
 ```
 
-### 3. Configure Zones (Optional)
+`qb-target` can be used instead of `ox_target`, but this resource is tuned for ox.
 
-Edit `config.lua` to customize:
-- Zone coordinates for picking, processing, and selling
-- Crop types and their properties
-- Processing rewards
-- Sell prices
+## Install
 
+1. Put `negans_farming` in your resources folder.
+2. Add the ensure lines above after your core dependencies.
+3. Import `sql/install.sql`, or leave `Config.SQL.AutoCreate = true`.
+4. Add item definitions.
 
+For `ox_inventory`, copy the paste-ready entries from `install/ox_inventory_items.lua` into `ox_inventory/data/items.lua`. Keep the drink item `client.event` values so drinks call this resource.
 
+The `qb_core_items.lua` file is only included as a fallback reference. Since you use `ox_inventory`, you do not need to install the QBCore item block.
 
-## Usage
+The install snippets include fruit, supplies, farm tools, failed mash, normal juices, and rare reputation drinks.
 
-### For Players
+## Gameplay
 
-1. Go to the farm location (marked with blip on map)
-2. Target crop zones and select "Pick [Crop]"
-3. Bring raw crops to the processing station
-4. Process raw crops into sellable products
-5. Sell products at the market location
+Players start at level 1 and can only see apple picking spots. XP unlocks oranges, strawberries, peaches, pineapples, and dragon fruit. The juice press lets players enter ingredient counts without revealing recipes. Correct recipes produce bottled drinks and save to the player's known recipe UI. Wrong mixtures consume part of the batch and can return ruined mash.
 
-### Configuration
+The buyer ped opens a custom sell menu, shows sellable fruit and drinks with reputation-adjusted prices, flags daily order bonuses, runs a negotiation skill check, then pays cash and awards farming XP and reputation.
 
-Edit `config.lua` to customize the resource:
+Use `/farmingtutorial` to open the step-by-step guide. Each tutorial step can set a GPS waypoint. Automatic tutorial popups are disabled by default so no farming UI opens on server/resource start.
 
-```lua
-Config.UseQbTarget = false  -- Set to true for qb-target, false for ox_target
+Use `/farmingjournal` or the default `F7` keybind to open the NUI journal. The juice press and buyer menus include buttons for both the journal and tutorial.
 
-Config.Zones = {
-    Picking = {
-        coords = vector3(0.0, 0.0, 0.0),
-        radius = 10.0
-    },
-    Processing = {
-        coords = vector3(0.0, 0.0, 0.0)
-    },
-    Selling = {
-        coords = vector3(0.0, 0.0, 0.0)
-    }
-}
+Daily buyer orders rotate once per UTC day at `Config.Orders.RotateHourUTC`. Each order has a per-player sold amount, so bonus payouts stop after the daily request is fulfilled.
 
-Config.Crops = {
-    wheat = {
-        label = "Wheat",
-        rawItem = "wheat",
-        processedItem = "flour",
-        processTime = 5000,
-        pickTime = 3000
-    },
-    -- Add more crops...
-}
-```
+## Real Tree Setup
 
-## Items
+The script no longer spawns visual tree props by default. `Config.Picking.SpawnNodeProps = false`, so harvest targets attach to existing map/YMAP trees or saved coordinates.
 
-Add these items to your ox_inventory:
+`Config.SearchableTrees.Enabled = true` lets players third-eye existing world tree models directly. Tree model lists live in `Config.SearchableTrees.Models`. If a map tree does not show a search option, add that tree model name or hash to the right fruit list.
 
-| Item | Label | Description |
-|------|-------|-------------|
-| wheat | Wheat | Raw wheat |
-| corn | Corn | Raw corn |
-| tomato | Tomato | Fresh tomato |
-| flour | Flour | Processed wheat |
-| cornmeal | Cornmeal | Processed corn |
-| tomatosauce | Tomato Sauce | Processed tomatoes |
+Admin tree editor commands:
 
+- `/farming_addtree apple`
+- `/farming_addtree orange`
+- `/farming_addtree strawberry`
+- `/farming_addtree peach`
+- `/farming_addtree pineapple`
+- `/farming_addtree dragonfruit`
+- `/farming_trees`
+- `/farming_removetree tree_id`
+- `/farming_refreshtrees`
 
+To add a custom saved spot, stand where players should third-eye the real tree, face it if you want, and run `/farming_addtree apple`. The spot is saved to `data/custom_trees.json` and refreshes for all players immediately.
 
-['raw_wheat'] = {
-    label = 'Raw Wheat',
-    weight = 100,
-    stack = true,
-    close = true,
-    description = 'Fresh wheat picked from the farm'
-},
+The original config zones still work as invisible target spots. Remove or move entries in `Config.Fruits[*].zones` if you only want searchable model trees and your custom saved trees.
 
-['raw_corn'] = {
-    label = 'Raw Corn',
-    weight = 150,
-    stack = true,
-    close = true,
-    description = 'Fresh corn from the farm'
-},
+Carry these tools for passive bonuses:
 
-['raw_tomato'] = {
-    label = 'Raw Tomato',
-    weight = 80,
-    stack = true,
-    close = true,
-    description = 'Fresh tomatoes from the farm'
-},
+- Harvest Basket: +1 fruit yield while picking.
+- Farm Gloves: easier picking skill checks.
+- Pruning Shears: shorter crop cooldowns and faster picking animations.
 
-['flour'] = {
-    label = 'Flour',
-    weight = 200,
-    stack = true,
-    close = true,
-    description = 'Processed flour from wheat'
-},
+Reputation tiers improve selling prices and unlock rare blends:
 
-['canned_corn'] = {
-    label = 'Canned Corn',
-    weight = 250,
-    stack = true,
-    close = true,
-    description = 'Canned corn ready for sale'
-},
+- Roadside Seller: base pricing.
+- Market Regular: +5% sale prices.
+- Orchard Favorite: +10% sale prices and Orchard Reserve access.
+- Juice Baron: +16% sale prices and Negan's Special access.
 
-['tomato_sauce'] = {
-    label = 'Tomato Sauce',
-    weight = 300,
-    stack = true,
-    close = true,
-    description = 'Fresh tomato sauce ready for sale'
-},
+## Owner Recipe Spoilers
 
+These are intentionally hidden from players:
 
+- Apple Juice: 4 apples, 1 sugar
+- Orange Juice: 4 oranges, 1 ice
+- Strawberry Blend: 5 strawberries, 1 apple, 1 sugar, 1 ice
+- Peach Punch: 3 peaches, 1 orange, 2 sugar, 1 ice
+- Tropical Mix: 3 pineapples, 1 orange, 1 strawberry, 1 sugar, 2 ice
+- Dragon Smoothie: 2 dragon fruit, 1 pineapple, 2 strawberries, 2 sugar, 2 ice
+- Orchard Reserve: 2 peaches, 2 pineapples, 2 apples, 2 sugar, 2 ice. Requires Orchard Favorite reputation.
+- Negan's Special: 3 dragon fruit, 2 pineapples, 1 peach, 2 strawberries, 3 sugar, 3 ice. Requires Juice Baron reputation.
+
+Each successful recipe also requires one empty bottle when `Config.Production.RequireBottle = true`.
+
+## Configuration
+
+Edit `shared/config.lua` for:
+
+- Fruit levels, XP, target locations, harvest amounts, props, and blips.
+- Skill check difficulty.
+- Juice press location and prop.
+- Supply shop prices.
+- Buyer ped, sale prices, money account, and negotiation bonus.
+- Sickness threshold and visual effect duration.
+- Reputation tiers, daily orders, admin command names, and farm tool bonuses.
+- Tutorial text, first-time prompt behavior, command name, and waypoint locations.
+- Searchable tree model lists, tree editor settings, and whether harvest props should spawn.
+
+Edit `server/recipes.lua` for hidden recipe ingredients, drink items, craft XP, and thirst values.
+
+## Notes
+
+- If you want fruit to be harder to discover, keep recipe spoilers out of public docs and only rebalance `Config.Recipes` in `server/recipes.lua`.
+- Some prop models may vary by game build. If a node prop does not appear, replace the `nodeProp` model in `Config.Fruits`.
+- `ox_inventory` item images are not included; add PNGs matching item names if you want custom icons.
+
+## Admin Commands
+
+Permission defaults to `admin` and can be changed at `Config.Admin.Permission`.
+
+- `/farming_setxp id amount`
+- `/farming_addxp id amount`
+- `/farming_setrep id amount`
+- `/farming_addrep id amount`
+- `/farming_resetrecipes id`
+- `/farming_testsick id`
 
